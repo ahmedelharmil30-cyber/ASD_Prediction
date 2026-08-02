@@ -1,38 +1,27 @@
-
 # 🧩 ASD Prediction — FastAQ (Streamlit + FastAPI)
 
-![Build](https://img.shields.io/badge/build-local-green) ![Python](https://img.shields.io/badge/python-3.11-blue) ![License](https://img.shields.io/badge/license-MIT-lightgrey)
+[![Python](https://img.shields.io/badge/python-3.11-blue.svg)](https://www.python.org/)
+[![Streamlit](https://img.shields.io/badge/streamlit-%3E%3D1.0-orange.svg)](https://streamlit.io/)
+[![FastAPI](https://img.shields.io/badge/fastapi-%3E%3D0.70-brightgreen.svg)](https://fastapi.tiangolo.com/)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-FastAQ is a compact, professional-feeling research demo for exploratory autism screening using the AQ‑10 questionnaire and multiple ML models. Designed for clarity and reproducibility: train in the notebook, serve with FastAPI, and explore with Streamlit.
+A compact, research-oriented end-to-end autism-screening demo built around the AQ‑10 questionnaire. Train models in the provided notebook, serve them via a FastAPI backend, and explore predictions interactively with a Streamlit frontend.
 
-Demo
-![demo](docs/demo-placeholder.gif)
+This repository is intended for education and prototyping — it is not a medical diagnostic system.
 
-**What's inside**
-- **End-to-end**: data → notebook training → saved `joblib` models → FastAPI → Streamlit UI
-- **Multiple models**: compare Logistic Regression, Random Forest, SVM (RBF), and Decision Tree
-- **Observability**: endpoints expose metadata and per-model metrics for reproducible comparison
+Why this repo is "pro"
+- Clear separation: training notebook, model artifacts, API server, and interactive UI
+- Reproducible model metadata + metrics API for easy CI/validation
+- Lightweight, dependency-minimal Streamlit UI you can extend quickly
 
-**Why use this**
-- Rapid local prototyping of feature and model ideas
-- Clear separation of concerns so you can swap preprocessing, models, or UI independently
-- Great for teaching ML model lifecycle and deployment basics
+Quick Links
+- Training notebook: `End_To_End.ipynb`
+- Models folder: `models/`
+- Backend API: `backend/app/` (FastAPI)
+- Streamlit UI: `streamlit_frontend/`
 
-**Repository at a glance**
-- `backend/` — FastAPI app (model loading, `/predict`, `/models`, `/metadata`, `/metrics`)
-- `streamlit_frontend/` — interactive UI to run/compare models and view results
-- `models/` — serialized model artifacts and metadata
-- `End_To_End.ipynb` — training & evaluation notebook
+Pro Quick Start (Windows) — Backend
 
-**Architecture (high level)**
-
-```mermaid
-flowchart LR
-	A[Datasets (CSV/arff)] --> B[End_To_End.ipynb]\n
-	B --> C[Trained models (joblib) in /models]\n+  C --> D[FastAPI backend]\n+  D --> E[Streamlit frontend]\n+  E -->|calls| D
-```
-
-Quick start — Backend (Windows)
 ```powershell
 cd backend
 python -m venv .venv
@@ -42,43 +31,60 @@ copy .env.example .env
 uvicorn app.main:app --reload --port 8000
 ```
 
-Visit `http://localhost:8000/docs` to exercise the API.
+Verify the API at http://localhost:8000/docs
 
-Quick start — Frontend (Streamlit)
+Pro Quick Start — Streamlit UI
+
 ```powershell
 cd streamlit_frontend
+python -m venv .venv
+.venv\Scripts\activate
 pip install -r requirements.txt
 streamlit run Home.py
 ```
 
-Open the Streamlit URL (usually `http://localhost:8501`) and use the sidebar to choose a model.
+Open the Streamlit local URL (typically http://localhost:8501). The sidebar now exposes a professional model chooser and persistent selection during the session.
+
+Core Features
+- Multi-model predictions (single or ensemble) with a normalized API response
+- Model metadata & per-model metrics endpoints (`/models`, `/metrics`, `/metadata`)
+- Streamlit UI with selectable models, a polished results card and comparison table
+
+Architecture (high level)
+
+```mermaid
+flowchart LR
+	subgraph Train
+		N[End_To_End.ipynb]\n(Notebook)
+		N --> M[models/*.joblib]\n  end
+	subgraph Serve
+		M --> API[FastAPI backend]\n+    API -->|/predict| P[Prediction service]
+		API -->|/models,/metrics| Meta[Metadata service]
+	end
+	subgraph UI
+		S[Streamlit frontend] --> API
+		Browser --> S
+	end
+	Browser --> API
+```
 
 Configuration
-- API base URL is configured via `API_URL` environment variable in the Streamlit frontend. Default: `http://localhost:8000`.
+- `backend/.env.example`: backend settings (port, debug, allowed origins)
+- `streamlit_frontend/.env` or environment variables: `API_URL` (defaults to `http://localhost:8000`)
 
-API endpoints
-- `GET /health` — service health and models loaded
-- `GET /models` — list models with display names and metric summary
-- `GET /metadata` — feature lists, AQ‑10 questions, dataset sizes
-- `GET /metrics` — per-model metrics (accuracy, f1, precision, recall)
-- `POST /predict?model=<key>` — single-model prediction
-- `POST /predict/all` — multi-model consensus prediction
-
-Usage examples
-- Run the Streamlit UI and submit the AQ‑10 form to compare all models or run a specific one via the new model selector.
+Best Practices
+- Keep `models/*.joblib` alongside `metadata.joblib` produced by training to ensure the API can load metrics and display names.
+- For reproducible experiments, tag the training run that produced each `.joblib` (the training notebook stores `model_version` metadata).
 
 Contributing
-- Keep PRs small and focused. Add tests if you change backend logic. Update `requirements.txt` when adding packages.
+- Add a short PR describing the proposed change and any dataset or model updates.
+- Run the training notebook and include a new `models/*.joblib` only if the model is small; otherwise provide steps to reproduce.
 
-Notes & next improvements
-- Add CI (GitHub Actions) to run lint/tests — happy to add a starter workflow
-- Add visual demo GIF and smaller screenshots under `docs/` for the README hero
-- Optionally add a Vercel/Render deploy button if you want hosted demos
+Want continuous checks?
+- Add a GitHub Action that runs a lightweight smoke test: start the backend, call `/health`, call `/models`, and assert JSON shapes.
 
 License
-- See [LICENSE](LICENSE) for license details.
+- MIT — see `LICENSE`.
 
-If you'd like, I can now:
-- add CI badges and a GitHub Actions workflow, or
-- add polished screenshots/GIF and update the `docs/` folder.
-
+Contact
+- This is an educational demo. For collaboration or questions open an issue.
