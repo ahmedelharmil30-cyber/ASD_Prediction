@@ -1,0 +1,18 @@
+fastapi==0.115.0
+uvicorn[standard]==0.30.6
+pydantic==2.9.2
+pydantic-settings==2.5.2
+# Must match (or exceed) the scikit-learn / imbalanced-learn versions the
+# models in models/*.joblib were actually pickled with (see End_To_End.ipynb,
+# setup cell: scikit-learn 1.9.0, imbalanced-learn 0.14.2), or joblib.load()
+# will fail or silently misbehave on unpickling.
+scikit-learn>=1.9,<2
+# NOTE: models are NOT imblearn.pipeline.Pipeline objects. SMOTE is
+# implemented from scratch in app/core/smote.py (SmotePipeline /
+# smote_resample), which model_loader.py registers under __main__ before
+# unpickling. imbalanced-learn is not imported anywhere in this backend and
+# is intentionally NOT a dependency.
+joblib==1.4.2
+numpy==1.26.4
+pandas==2.2.3
+python-dotenv==1.0.1

@@ -1,0 +1,8 @@
+# This project uses two separate environments — see:
+#   backend/requirements.txt   (FastAPI inference API)
+#   frontend/requirements.txt  (Streamlit dashboard)
+#
+# This root file simply installs both, for convenience when running
+# everything in a single virtual environment:
+-r backend/requirements.txt
+-r frontend/requirements.txt
